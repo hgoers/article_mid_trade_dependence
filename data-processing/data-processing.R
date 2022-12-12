@@ -72,9 +72,34 @@ trade_dep <- trade_bilat |>
 
 trade_dep_max <- trade_dep |> 
   group_by(country1, country2, year) |> 
+  filter(trade_dep_total > 0) |> 
   slice_max(trade_dep_total, with_ties = F) |> 
   ungroup() |> 
   select(year:cmd_code, cmd_desc_e, trade_dep_max = trade_dep_total)
+
+trade_dep_75 <- trade_dep |> 
+  group_by(country1, country2, year) |>
+  filter(trade_dep_total > 0) |> 
+  summarise(trade_dep_75 = quantile(trade_dep_total)[[4]]) |> 
+  ungroup()
+
+trade_dep_avg <- trade_dep |> 
+  group_by(country1, country2, year) |> 
+  filter(trade_dep_total > 0) |> 
+  summarise(trade_dep_avg = mean(trade_dep_total)) |> 
+  ungroup()
+
+trade_dep_25 <- trade_dep |> 
+  group_by(country1, country2, year) |> 
+  filter(trade_dep_total > 0) |> 
+  summarise(trade_dep_25 = quantile(trade_dep_total)[[2]]) |> 
+  ungroup()
+
+trade_dep_min <- trade_dep |> 
+  group_by(country1, country2, year) |> 
+  filter(trade_dep_total > 0) |> 
+  summarise(trade_dep_min = min(trade_dep_total)) |> 
+  ungroup()
 
 trade_dep_broad <- trade_bilat |> 
   group_by(year, country1, country2) |> 
@@ -105,9 +130,14 @@ controls <- scope |>
 # TODO: Work out what are true NAs and what are 0s. 
 full_df <- mid_df |> 
   left_join(trade_dep_max, by = c("country1", "country2", "year")) |> 
+  left_join(trade_dep_75, by = c("country1", "country2", "year")) |> 
+  left_join(trade_dep_avg, by = c("country1", "country2", "year")) |> 
+  left_join(trade_dep_25, by = c("country1", "country2", "year")) |> 
+  left_join(trade_dep_min, by = c("country1", "country2", "year")) |> 
   left_join(trade_dep_broad, by = c("country1", "country2", "year")) |>
   left_join(controls, by = c("ccode1", "country1", "ccode2", "country2", "year")) |> 
-  mutate(across(trade_dep_total:trade_dep_broad, ~ replace_na(.x, 0)))
+  mutate(across(trade_dep_max:trade_dep_broad, ~ replace_na(.x, 0)),
+         trade_dep_total = trade_dep_max)
 
 rio::export(full_df, here::here("data", "full_df.csv"))
 
