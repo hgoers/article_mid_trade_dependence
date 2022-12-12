@@ -47,10 +47,6 @@ Some scholars argue that this measure captures the cost state $i$ considers when
 
 To understand the role that trade dependence plays in foreign policy formation, we not only need to further develop our understanding of trade dependence, but also of the realities faced by both the imposer and target of trade disruptions. Trade embargoes are costly for both the target and the imposer. Both of these actors will attempt to minimize the costs they will face and maximize those faced by their opponent. This occurs over a number of actions, with each actor gaining more information about their own and their opponent's tolerance to these economic costs as this bargaining game progresses.
 
-Kavaklı et al [-@kavakli2020] provide a useful typology for understanding the type of actions each player can undertake. They argue that a state's reactions to trade disruptions can involve external and internal substitution. External substitution involves finding alternate trade partners for a product. Internal substitution involves locating new domestic supplies of the disrupted product. The less substitutions available to a state, the more vulnerable they will be to trade disruptions.
-
-However, Gartzke and Westerwinter [-@gartzke2016] and Chen [-@chen2021] point out that we need to understand these asymmetries within the broader context of global trade. Within the network of product-level global trade, individual states will have symmetric and asymmetric relations with a number of different states.
-
 ## Trade dependence and militarized conflict
 
 First, we need to understand how important trade between states $i$ and $j$ is to state $i$'s economy.
