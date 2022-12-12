@@ -45,25 +45,7 @@ $$
 
 Some scholars argue that this measure captures the cost state $i$ considers when deciding whether to adopt some unfavorable foreign policy towards state $j$ [@oneal1997]. I disagree.
 
-To understand the role that trade dependence plays in foreign policy formation, we not only need to further develop our understanding of trade dependence, but also of the realities faced by both the imposer and target of trade disruptions. Trade embargoes are costly for both the target and the imposer. Both of these actors will attempt to minimize the costs they will face and maximize those faced by their opponent. This occurs over a number of actions, with each actor gaining more information about their own and their opponent's tolerance to these economic costs as this bargaining game progresses.
-
-Kavaklı et al [-@kavakli2020] provide a useful typology for understanding the type of actions each player can undertake. They argue that a state's reactions to trade disruptions can involve external and internal substitution. External substitution involves finding alternate trade partners for a product. Internal substitution involves locating new domestic supplies of the disrupted product. The less substitutions available to a state, the more vulnerable they will be to trade disruptions.
-
-However, Gartzke and Westerwinter [-@gartzke2016] and Chen [-@chen2021] point out that we need to understand these asymmetries within the broader context of global trade. Within the network of product-level global trade, individual states will have symmetric and asymmetric relations with a number of different states.
-
 ## Trade dependence and militarized conflict
-
-First, we need to understand how important trade between states $i$ and $j$ is to state $i$'s economy.
-
-> H1: The greater the proportion of state \$i\$'s GDP derived from trade in product $p$ with state \$j\$, the less likely state $i$ is to initiate militarized conflict against state $j$.
-
-Next, we need to understand whether state $i$ can locate alternative trade partners to state $j$ to mitigate the expected cost of trade disruptions from conflict.
-
-> H2: The smaller the number of trade partners in the market for product $p$, the less likely state $i$ is to initiate militarized conflict against state $j$.
-
-Next, we need to understand state $i$'s capacity for internal substitution. We will assume that state $i$ can divert exports in product $p$ to the domestic market to help mitigate costs from import disruptions imposed by state \$j\$. However, if state $i$ does not have a supply of product $p$ that it can divert from exports to fill the new gap in the domestic market, the greater the cost of trade disruptions in that product.
-
-> H3: The smaller state $i$'s ratio of exports to imports in product $p$, the less likely state $i$ is to initiate militarized conflict against state $j$.
 
 ## Research design
 
