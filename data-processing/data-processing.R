@@ -2,6 +2,7 @@ library(tidyverse)
 library(wbstats)
 library(countrycode)
 library(peacesciencer)
+library(jsonlite)
 
 # Scope -------------------------------------------------------------------
 
@@ -53,15 +54,23 @@ gdp_df <- wbstats::wb_data("NY.GDP.MKTP.CD", start_date = 2014, end_date = 2014,
     gdp = value
   )
 
+commodities <- fromJSON("https://comtrade.un.org/Data/cache/classificationHS.json")$results |> 
+  filter(parent == "TOTAL") |> 
+  transmute(
+    cmd_code = as.numeric(id),
+    cmd_desc_e = str_sub(text, 6)
+  )
+
 trade_dep <- trade_bilat |> 
-  group_by(year, country1, country2, cmd_desc_e) |> 
+  group_by(year, country1, country2, cmd_code) |> 
   summarise(trade_value_total = sum(trade_value, na.rm = T)) |> 
+  left_join(commodities, by = "cmd_code") |> 
   left_join(gdp_df, by = c("year", "country1")) |> 
-  mutate(trade_dep_total = (trade_value_total / gdp) * 100) |> 
+  mutate(trade_dep_total = (trade_value_total / gdp)) |> 
   group_by(country1, country2, year) |> 
   slice_max(trade_dep_total, with_ties = F) |> 
   ungroup() |> 
-  select(year:cmd_desc_e, trade_dep_total)
+  select(year:cmd_code, cmd_desc_e, trade_dep_total)
 
 trade_dep_broad <- trade_bilat |> 
   group_by(year, country1, country2) |> 
@@ -71,7 +80,7 @@ trade_dep_broad <- trade_bilat |>
     country1, 
     country2,
     year,
-    trade_dep_broad = (total_trade_value / gdp) * 100
+    trade_dep_broad = (total_trade_value / gdp)
   ) |> 
   ungroup()
 
@@ -93,7 +102,8 @@ controls <- scope |>
 full_df <- mid_df |> 
   left_join(trade_dep, by = c("country1", "country2", "year")) |> 
   left_join(trade_dep_broad, by = c("country1", "country2", "year")) |>
-  left_join(controls, by = c("ccode1", "country1", "ccode2", "country2", "year"))
+  left_join(controls, by = c("ccode1", "country1", "ccode2", "country2", "year")) |> 
+  mutate(across(trade_dep_total:trade_dep_broad, ~ replace_na(.x, 0)))
 
 rio::export(full_df, here::here("data", "full_df.csv"))
 
