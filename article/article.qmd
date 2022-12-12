@@ -37,25 +37,23 @@ Before we explore this dynamic in detail, let us step out in detail the process 
 
 We are interested in the relationship between trade dependence and this pre-cursor to war. Certainly, if two states are at war with one another, we should expect trade to nearly, if not entirely, cease between them. I do not refute this. However, we should not expect trade to entirely cease between states when they are still circling each other, hoping to achieve their most desired policy outcome and avoid war. Tying a measure of the entire trade relationship to whether or not states initiate militarized interstate disputes (not war) against each other misses this important distinction. This paper seeks to address this.
 
-The very broad measure of trade dependence dominant in the literature examines the total trade between states $i$ and $j$ relative to state $i$'s gross domestic product (GDP) in year $t$:
-
-$$
-TD_{ij,t} = \frac{M_{ij,t} + X_{ij,t}}{GDP_{i,t}}
-$$
-
-Some scholars argue that this measure captures the cost state $i$ considers when deciding whether to adopt some unfavorable foreign policy towards state $j$ [@oneal1997]. I disagree.
-
 ## Trade dependence and militarized conflict
+
+Returning to our motivating question: does trade dependence deter states from initiating militarized conflict against each other? The commercial peace theory argues that trade dependence increases the expected cost of initiating conflict against a trade partner, decreasing the expected net benefits derived from such an action and, therefore, reducing the likelihood a state will initiate conflict. This leads to the following testable hypothesis:
+
+> H1: As product-level trade dependence between two states increases, the likelihood that a state will initiate militarized conflict against its trade partner decreases.
 
 ## Research design
 
 ### Scope
 
-This analysis focuses on all directed state dyads in all years between 2000 and 2014. This includes `r nrow(scope) |> comma()` observations.
+This analysis focuses on all directed state dyads in 2014. This includes `r nrow(scope) |> comma()` observations. We are interested in whether or not a trade dependent state initiates conflict against another state. This is a directed question. We need to know whether the potential initiator is dependent on their opponent, not simply whether either partner has a dependence on their other.
+
+The narrow timeframe included in this analysis is driven by data constraints. I only have access to complete trade and militarized interstate dispute data for 2014. A natural first step for extending this analysis is including a broader timeframe in the analysis.
 
 ### Dependent variable
 
-My dependent variable focuses on the onset of Militarized Interstate Disputes, or events in which one or more states threatens, displays, or uses force against another state or states. I include two binary dependent variables. First, I identify all dyad-years in which any MID was initiated. Second, I identify all dyad-years in which any MID involving at least one battle-related death was initiated. These variables are coded 1 if state $i$ initiated the MID against state $j$ in a given year. Otherwise, they receive a value of 0.
+My dependent variable focuses on the onset of militarized interstate disputes, or events in which one or more states threaten, display, or use force against another state or states. I include two binary dependent variables. First, I identify all dyad-years in which any MID was initiated. Second, I identify all dyad-years in which any MID involving at least one battle-related death was initiated. These variables are coded 1 if state $i$ initiated the MID against state $j$ in a given year. Otherwise, they receive a value of 0.
 
 The data come from version five of Palmer et al's [-@palmer2022] Militarized Interstate Dispute data collection. This dataset includes all known MIDs from 1816-2014, recorded at the participant level. Between 2000 and 2014, `r mid_df |> filter(mid_initiated == 1) |> nrow() |> comma()` MIDs were initiated.
 
