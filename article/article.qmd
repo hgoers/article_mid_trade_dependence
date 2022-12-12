@@ -25,6 +25,18 @@ full_df <- rio::import(here::here("data", "full_df.csv"))
 source(here::here("analysis", "models.R"))
 ```
 
+```{r helpers}
+theme_custom <- function() {
+  
+  theme_minimal() + 
+  theme(plot.title.position = "plot",
+        panel.grid = element_blank(),
+        plot.title = element_text(face = "bold"),
+        legend.position = "bottom")
+  
+}
+```
+
 Does trade dependence reduce conflict between states? Debate remains over the role and significance of economic interdependence in promoting peace: different scholars have found that dependence increases, decreases, and has no significant effect on the likelihood of conflict between states. However, this research has generally relied on a broad measure of bilateral trade dependence. This paper will delve deeper into the effect of this economic relationship by exploring product-level dependence. If trade dependence deters conflict between states by increasing the expected cost of conflict through trade disruptions, we should measure the true cost of this disruption. Rarely, if ever, do we see states threaten to or impose total trade embargoes. Rather, states impose trade bans on specific products that maximize the cost borne by their opponent while minimizing the cost to their own economy. Using a more disaggregated measure of trade dependence, I find that dependence does not have a significant effect on the likelihood of militarized disputes between states.
 
 {{< pagebreak >}}
@@ -35,7 +47,7 @@ Debate remains over the role played by, and significance of, bilateral trade dep
 
 Before we explore this dynamic in detail, let us step out in detail the process we seek better understand. First, tensions between two states build. This could be for a number of reasons, including historical animosity, a diplomatic spat over a regional or global issue, or domestic political interests prompting an unfavourable bilateral foreign policy. The threatened state issues a formal request to the initiating state to change or reverse their policy actions. The initiating state refuses: the incentives for enacting the controversial policy continue to outweigh the cost of a soured relationship with the threatened state. The threatened state then states that it will adopt punitive policies towards the initiator, including trade embargoes on specific products on which the initiator depends. Here, the initiator's expected costs from pursuing this policy change: they know that if they continue along this path they will likely face economic costs in the form of trade disruptions. Does this deter them? Many scholars would ask: how costly is this disruption? This paper will answer this question. If the costs are not so great, the initiator may respond to this threat through further escalation, including through a militarized dispute. International relations scholarship uses this broad measure of conflict to include actions that sit below invasion or war. This is often the precursor to full-scale interstate war. States use these actions as an extreme signal of their intent to escalate a dispute to war, hoping to deter their opponent.
 
-We are interested in the relationship between trade dependence and this pre-cursor to war. Certainly, if two states are at war with one another, we should expect trade to nearly, if not entirely, cease between them. I do not refute this. However, we should not expect trade to entirely cease between states when they are still circling each other, hoping to achieve their most desired policy outcome and avoid war. Tying a measure of the entire trade relationship to whether or not states initiate militarized interstate disputes (not war) against each other misses this important distinction. This paper seeks to address this.
+We are interested in the relationship between trade dependence and this pre-cursor to war. Certainly, if two states are at war with one another, we should expect trade to nearly, if not entirely, cease between them. However, we should not expect trade to entirely cease between states when they are still circling each other, hoping to achieve their most desired policy outcome and avoid war. Tying a measure of the entire trade relationship to whether or not states initiate militarized interstate disputes (not war) against each other misses this important distinction. This paper seeks to address this.
 
 ## Trade dependence and militarized conflict
 
@@ -59,15 +71,11 @@ The data come from version five of Palmer et al's [-@palmer2022] Militarized Int
 
 ### Independent variables of interest
 
-My primary independent variable of interest is trade dependence. This paper introduces a novel measure of trade dependence. Rather than looking at the balance of trade in total imports, exports, or trade value, I measure dependence in trade of specific products. This more fine-grained approach to measuring trade dependence allows us to examine more precisely the potential cost a foreign government could incur if their trade partner discovered their efforts at subversion.
+My primary independent variable of interest is bilateral trade dependence. This paper introduces a novel measure of this dependence. Rather than looking at the balance of trade in total imports, exports, or trade value, I measure dependence in trade of specific products. This more fine-grained approach to measuring trade dependence allows us to examine more precisely the potential costs an initiator expects to incur if they escalate a dispute to a MID.
 
-This measure of trade dependence treats both the imposer and target of trade disrupts as complex actors. With regard to the imposer, it accounts for their attempts to disrupt trade in a product in which the trade asymmetries will result in the lowest cost to their economy.
+To do this, I adopt the classical structure proposed by Oneal and Russett [-@oneal1997] but adapt it to trade in each product. I use bilateral annual export and import data provided by UN Comtrade. Commodities are grouped according to the standard two digit harmonized system. For example, all live animals, including horses, bovines, swine, sheep, and goats, are grouped together into a category called *animals - live*. My theory assumes a degree of substitution within this group. It would be interesting to explore the level of granularity required to meaningfully make this assumption. Sadly, this is difficult to test because we lose data completeness as we increase granularity.
 
-With regard to the target, it captures the various responses available to them. It includes an understanding of how easily the target can locate an alternative trade partner for the disrupted product. If the target is able to easily and quickly locate an alternate trade partner, the threat or imposition of trade embargoes will have little deterrent effects.
-
-This measure of trade dependence captures three components of a state's imports or exports: first, the importance of trade in the product to the state's economy; second, the diversity of the trade partner pool for each product; and third, each trade partner's dominance in the market for each product. I will expand on each of these components in turn.
-
-First, how important is trade in each product to the state's economy? To build our understanding of a state's product-level reliance on trade with another state, we must first determine the degree to which their economy relies on access to or sales of that specific product. I, therefore, measure this as the value of trade in that product by the reporter as a proportion of its gross domestic product (GDP).
+Formally, my measure of trade dependence is defined as the total imports and exports from state $i$ to (or from) state $j$ for a given commodity in a given year relative to state $i$'s GDP for that year.
 
 $$
 r_{ij,p,t} = \frac{m_{ij,p,t} + x_{ij,p,t}}{GDP_{i,t}}
@@ -75,56 +83,74 @@ $$
 
 Where $j$ is the trade partner and $p$ is the product. This value is measured for each year, $t$.
 
-Second, we need to understand whether alternate trade partners are available for the state to turn to if trade in a product is disrupted. This is simply a measure of the number of other states trading in that product. I take the natural logarithum of this value to account for diminishing returns from many additional alternate trade partners.
+```{r}
+trade_dep_max <- full_df |> 
+  slice_max(trade_dep_total, with_ties = F) |> 
+  mutate(cmd_desc_e = str_to_lower(cmd_desc_e))
+```
 
-Second, how diverse is the trade partner pool for each product? If the state only imports (or exports) a product from (to) one trade partner, they are more exposed than a state that trades in the product with many different trade partners. To measure this, I consider the value of trade with a partner as a proportion of the value of trade in the product.
+In 2014, product-level trade dependence ranged from `r full_df |> slice_min(trade_dep_total, with_ties = F) |> pull(trade_dep_total) |> percent()` to `r trade_dep_max |> pull(trade_dep_total) |> percent()`, with an average level of trade dependence of `r full_df |> summarise(mean = mean(trade_dep_total)) |> pull(mean) |> percent(accuracy = 0.01)`. The most dependent pairing is between `r pull(trade_dep_max, country1)` and `r pull(trade_dep_max, country2)`: `r pull(trade_dep_max, country1)`'s trade in `r pull(trade_dep_max, cmd_desc_e)` with `r pull(trade_dep_max, country2)` amounts to `r trade_dep_max |> pull(trade_dep_total) |> percent()` of `r pull(trade_dep_max, country1)`'s GDP in 2014.
 
-For imports:
+States trade in a large number of commodities. For each directed state dyad, we get the same number of measures of dependence as products traded between them. We need to reduce this to a single measure of dependence. I propose five options: the minimum, the 25th percentile, the average, the 75th percentile, and the maximum level of trade dependence between two states. Let's discuss the logic of the extremes - the minimum and the maximum values first. The minimum value represents the lowest possible cost state $j$ could threaten to impose on state $i$ in a given year. If this is relatively high, state $i$ is probably very trade dependent on state $j$. This should be a very strong measure of dependence. However, state $j$ is unlikely to threaten to stop trade in this commodity. Remember, they aim to impose the greatest possible cost on state $i$ whilst minimizing the cost to themselves. Perhaps a better candidate is trade in the most dependent commodity. To qualify this measure, I will also test intermediate measures of dependence: the 25th, 50th, and 75th percentiles of trade dependence across all traded commodities. These measures perhaps better capture the dynamics at play with the extreme measures whilst allowing state $j$ to minimize the cost it bears and also to select a number of commodities to disrupt, not just one. To illustrate, let's continue to examine the trade relationship between `r pull(trade_dep_max, country1)` and `r pull(trade_dep_max, country2)`.
 
-$$
-d_{ij,p,t} = \frac{m_{ij,p,t}}{m_{ik,p,t}}
-$$
+```{r}
+trade_dep |> 
+  filter(
+      country1 == trade_dep_max$country1,
+      country2 == trade_dep_max$country2,
+      trade_dep_total > 0
+  ) |> 
+  summarise(
+    `Trade dependence` = round(quantile(trade_dep_total) * 100, 3)
+  ) |> 
+  mutate(
+    Level = c("Minimum", "25th percentile", "Mean", "75th percentile", "Maximum")
+  ) |> 
+  relocate(Level) |> 
+  knitr::kable()
+```
 
-For exports:
-
-$$
-d_{ij,p,t} = \frac{x_{ij,p,t}}{x_{ik,p,t}}
-$$
-
-Where $k$ represents all of state $i$'s trade partners.
-
-Finally, how dominant is each trade partner in the market for each product? If the state trades in a product that is imported (or exported) by one trade partner, they are more vulnerable to trade disruptions from that one trade partner than if alternative trade partners exist.[^1] To measure this, I consider the value of products traded by the trade partner as a proportion of total value of that product traded.
-
-[^1]: This, of course, assumes that the state can easily access these alternative markets. I leave it up to further research to capture the nuanced difficulties inherent in this process.
-
-For imports:
-
-$$
-a_{j,p,t} = \frac{x_{jk,p,t}}{x_{p,t}}
-$$
-
-For exports:
-
-$$
-a_{j,p,t} = \frac{m_{jk,p,t}}{m_{p,t}}
-$$
-
-I then aggregate these measures to determine the level of trade dependence of state $i$ on their trade partner $j$ by product in a given year:
-
-$$
-dep_{ij,p,t} = \sum{r_{ij,p,t}, d_{ij,p,t}, a_{j,p,t}}
-$$
-
-This measure allows me to focus on trade in goods and services that are critical to the potential supporter. I argue that this represents the true cost that the potential sponsor considers when deciding whether or not to support a NSA group challenging a rival state.
-
-### Previous measures of trade dependence
-
-Chen [-@chen2021] develops a measure of Extended Dependence, or "the extent to which the potential challenger is economically dependent on the defensive allies of its potential target" (p.251). He defines this as:
-
-$$
-TD_{ij,t} = \frac{M_{ik,t} + X_{ik,t}}{GDP_{i,t}}
-$$
-
-Where $i$ is the potential challenger, $j$ is the target, $k$ is the target's allies, and $t$ is the given year. He lags this value by one year to address concerns surrounding endogeneity and reverse causality.
+This measure allows me to focus on trade in goods that are critical to the potential initiator. I argue that this better represents the true cost they expect to incur if they escalate tensions with a trade partner to a MID.
 
 ### Control variables
+
+Following other literature to enhance comparability, I include the following controls.
+
+## Results
+
+Let's look at the relationship between the predicted probability that state $i$ will initiate a MID with state $j$ for a given level of product-level trade dependence. First, I will explore the different degrees of effects predicted using the different measures of product-level trade dependence. I will then compare the relationship between MID initiation and product-level and broad, total trade dependence. Finally, I will include traditional controls for a state's decision to initiate a MID against a rival to see whether trade dependence is a significant factor in this complex decision. 
+
+
+We will compare this to the predicted probability derived using the traditional broad measure of trade dependence.
+
+```{r}
+tbl_merge(list(t1, t2), tab_spanner = c("Product level", "Broad level"))
+```
+
+I used a binary logistic regression model to predict the probability that state $i$ initiates a MID against state $j$ for a given level of trade dependence. Using product-level trade dependence, I find that increasing dependence by one percentage point **increases** the odds that state $i$ will initiate MID against state $j$ by `r tidy(m1, exponentiate = T) |> filter(term == "trade_dep_total") |> pull(estimate) |> round(2)` on average. This relationship is highly statistically significant. This more fine-grained measure of trade dependence predicts a stronger relationship between conflict and trade dependence than the more tradition and broad-based approach. Using total trade dependence, I find that increasing dependence by one percentage point increases the odds that state $i$ will initiate MID against state $j$ by `r tidy(m2, exponentiate = T) |> filter(term == "trade_dep_broad") |> pull(estimate) |> round(2)` on average.
+
+*Figure 1* illustrates the different predicted probabilities that state $i$ will initiate an MID against state $j$ for each possible level trade dependence between no dependence (0 percent) and total dependence (100 percent).[^3]
+
+[^3]: Any prediction made for a level of trade dependence above `r max(full_df$trade_dep_total) |> percent()` for product-level dependence and `r max(full_df$trade_dep_broad) |> percent()` for total trade dependence is an out of sample prediction. 
+
+```{r}
+ggplot(pred_m1_m2, aes(x = trade_dep, y = .fitted, colour = type)) + 
+  geom_line() + 
+  theme_custom() + 
+  labs(
+    title = "Predicted probability of MID given product-level trade dependence",
+    x = "Trade dependence (%)",
+    y = NULL,
+    colour = "Measure"
+  )
+```
+
+It is worth noting that product-level trade dependence predicts a much more aggressive relationship between conflict and trade dependence: the point at which MIDs are predicted to be more likely than not is at `r pred_m1_m2 |> filter(type == "Product-level", .fitted >= 0.5) |> slice(1) |> pull(trade_dep)`% for product-level trade dependence and `r pred_m1_m2 |> filter(type == "Total trade", .fitted >= 0.5) |> slice(1) |> pull(trade_dep)`% for total trade dependence. 
+
+Moving from these base models to ones that incorporate traditional controls for MIDs, we learn that the relationship between conflict and trade dependence is not significant. 
+
+```{r}
+tbl_merge(list(t3, t4), tab_spanner = c("Product level", "Broad level"))
+```
+
+For both product-level and total trade dependence, the odds that state $i$ will initiate an MID against state $j$ remain positive; however, the statistical significance of this relationship drops well below traditional thresholds. Significant determinants of conflict include contiguity and state $i$'s level of democracy. Concentrating on product-level trade dependence, I find that state $i$ is less to initiate an MID against a state with which it shares a land border. I also find that as state $i$ becomes more democratic, it is less likely to initiate a MID against state $j$. Interestingly, I find that state $j$'s level of democracy does not appear to be a significant factor in state $i$'s decision to initiate an MID, holding all else constant. 

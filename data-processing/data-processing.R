@@ -59,7 +59,8 @@ commodities <- fromJSON("https://comtrade.un.org/Data/cache/classificationHS.jso
   transmute(
     cmd_code = as.numeric(id),
     cmd_desc_e = str_sub(text, 6)
-  )
+  ) |> 
+  distinct()
 
 trade_dep <- trade_bilat |> 
   group_by(year, country1, country2, cmd_code) |> 
@@ -67,10 +68,13 @@ trade_dep <- trade_bilat |>
   left_join(commodities, by = "cmd_code") |> 
   left_join(gdp_df, by = c("year", "country1")) |> 
   mutate(trade_dep_total = (trade_value_total / gdp)) |> 
+  ungroup()
+
+trade_dep_max <- trade_dep |> 
   group_by(country1, country2, year) |> 
   slice_max(trade_dep_total, with_ties = F) |> 
   ungroup() |> 
-  select(year:cmd_code, cmd_desc_e, trade_dep_total)
+  select(year:cmd_code, cmd_desc_e, trade_dep_max = trade_dep_total)
 
 trade_dep_broad <- trade_bilat |> 
   group_by(year, country1, country2) |> 
@@ -100,7 +104,7 @@ controls <- scope |>
 # Create full dataset -----------------------------------------------------
 # TODO: Work out what are true NAs and what are 0s. 
 full_df <- mid_df |> 
-  left_join(trade_dep, by = c("country1", "country2", "year")) |> 
+  left_join(trade_dep_max, by = c("country1", "country2", "year")) |> 
   left_join(trade_dep_broad, by = c("country1", "country2", "year")) |>
   left_join(controls, by = c("ccode1", "country1", "ccode2", "country2", "year")) |> 
   mutate(across(trade_dep_total:trade_dep_broad, ~ replace_na(.x, 0)))
