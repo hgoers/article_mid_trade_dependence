@@ -53,9 +53,9 @@ The narrow timeframe included in this analysis is driven by data constraints. I 
 
 ### Dependent variable
 
-My dependent variable focuses on the onset of militarized interstate disputes, or events in which one or more states threaten, display, or use force against another state or states. I include two binary dependent variables. First, I identify all dyad-years in which any MID was initiated. Second, I identify all dyad-years in which any MID involving at least one battle-related death was initiated. These variables are coded 1 if state $i$ initiated the MID against state $j$ in a given year. Otherwise, they receive a value of 0.
+My dependent variable focuses on the onset of militarized interstate disputes (MIDs), or events in which one or more states threaten, display, or use force against another state or states. If state $i$ initiated the MID against state $j$ in a given year, this variable is coded 1. Otherwise, it receives a value of 0.
 
-The data come from version five of Palmer et al's [-@palmer2022] Militarized Interstate Dispute data collection. This dataset includes all known MIDs from 1816-2014, recorded at the participant level. Between 2000 and 2014, `r mid_df |> filter(mid_initiated == 1) |> nrow() |> comma()` MIDs were initiated.
+The data come from version five of Palmer et al's [-@palmer2022] Militarized Interstate Dispute data collection. This dataset includes all known MIDs from 1816-2014, recorded at the participant level. In 2014, `r full_df |> filter(mid_onset_all == 1) |> nrow() |> comma()` MIDs were initiated.
 
 ### Independent variables of interest
 
