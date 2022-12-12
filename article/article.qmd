@@ -1,0 +1,150 @@
+---
+title: "Trade Dependence"
+format: 
+  html:
+    self-contained: true
+bibliography: bibliography.bib
+execute: 
+  message: false
+  warning: false
+  echo: false
+---
+
+```{r libraries}
+library(tidyverse)
+library(scales)
+library(gtsummary)
+library(modelsummary)
+```
+
+```{r data}
+full_df <- rio::import(here::here("data", "full_df.csv"))
+```
+
+```{r models}
+source(here::here("analysis", "models.R"))
+```
+
+Does trade dependence reduce conflict between states? Debate remains over the role and significance of economic interdependence in promoting peace: different scholars have found that dependence increases, decreases, and has no significant effect on the likelihood of conflict between states. However, this research has generally relied on a broad measure of bilateral trade dependence. This paper will delve deeper into the effect of this economic relationship by exploring product-level dependence. If trade dependence deters conflict between states by increasing the expected cost of conflict through trade disruptions, we should measure the true cost of this disruption. Rarely, if ever, do we see states threaten to or impose total trade embargoes. Rather, states impose trade bans on specific products that maximize the cost borne by their opponent while minimizing the cost to their own economy. Using a more disaggregated measure of trade dependence, I find that dependence does not have a significant effect on the likelihood of militarized disputes between states.
+
+{{< pagebreak >}}
+
+The commercial peace theory maintains that trade fosters peace between states because it makes conflict more costly. When a state is deciding whether to initiate conflict against another state, they weigh the benefits they expect to derive against the costs they expect to incur. When the benefits outweigh the costs, conflict begins. Commercial peace theory is a simple extension of this bargaining theory of conflict: the inevitable trade disruptions caused by conflict increase the costs states face, which decreases the likelihood that the benefits will outweigh the costs and conflict will begin, *ceteris paribus*.
+
+Debate remains over the role played by, and significance of, bilateral trade dependence in conflict mitigation. Recent scholarship on the topic has begun exploring whether this ambiguity is the product of measurement error. Within international relations scholarship, measures of trade dependence have been defined at a broad level, predominantly using a measure introduced by Oneal and Russett [-@oneal1997] that explores total trade between two states relative to their gross domestic product (GDP). However, a more disaggregated approach to trade dependence is worth exploring. We are interested in understanding how trade dependence can deter conflict. Rarely (if ever) do states threaten to sever their entire trade relationship with another state, including trade dependent states. Rather, we regularly see states threaten or enact trade bans on particular products. In fact, states often aim to threaten to, or actually, inflict the greatest harm on their rival whilst minimizing the costs they themselves will face. A broad understanding of trade dependence does not capture the real threat a potential aggressor faces or should expect to face. A more accurate measure of this factor is product-level trade dependence. Asymmetries at this level have been used as a foreign policy mechanism to deter or punish rival states.
+
+Before we explore this dynamic in detail, let us step out in detail the process we seek better understand. First, tensions between two states build. This could be for a number of reasons, including historical animosity, a diplomatic spat over a regional or global issue, or domestic political interests prompting an unfavourable bilateral foreign policy. The threatened state issues a formal request to the initiating state to change or reverse their policy actions. The initiating state refuses: the incentives for enacting the controversial policy continue to outweigh the cost of a soured relationship with the threatened state. The threatened state then states that it will adopt punitive policies towards the initiator, including trade embargoes on specific products on which the initiator depends. Here, the initiator's expected costs from pursuing this policy change: they know that if they continue along this path they will likely face economic costs in the form of trade disruptions. Does this deter them? Many scholars would ask: how costly is this disruption? This paper will answer this question. If the costs are not so great, the initiator may respond to this threat through further escalation, including through a militarized dispute. International relations scholarship uses this broad measure of conflict to include actions that sit below invasion or war. This is often the precursor to full-scale interstate war. States use these actions as an extreme signal of their intent to escalate a dispute to war, hoping to deter their opponent.
+
+We are interested in the relationship between trade dependence and this pre-cursor to war. Certainly, if two states are at war with one another, we should expect trade to nearly, if not entirely, cease between them. I do not refute this. However, we should not expect trade to entirely cease between states when they are still circling each other, hoping to achieve their most desired policy outcome and avoid war. Tying a measure of the entire trade relationship to whether or not states initiate militarized interstate disputes (not war) against each other misses this important distinction. This paper seeks to address this.
+
+The very broad measure of trade dependence dominant in the literature examines the total trade between states $i$ and $j$ relative to state $i$'s gross domestic product (GDP) in year $t$:
+
+$$
+TD_{ij,t} = \frac{M_{ij,t} + X_{ij,t}}{GDP_{i,t}}
+$$
+
+Some scholars argue that this measure captures the cost state $i$ considers when deciding whether to adopt some unfavorable foreign policy towards state $j$ [@oneal1997]. I disagree.
+
+To understand the role that trade dependence plays in foreign policy formation, we not only need to further develop our understanding of trade dependence, but also of the realities faced by both the imposer and target of trade disruptions. Trade embargoes are costly for both the target and the imposer. Both of these actors will attempt to minimize the costs they will face and maximize those faced by their opponent. This occurs over a number of actions, with each actor gaining more information about their own and their opponent's tolerance to these economic costs as this bargaining game progresses.
+
+Kavaklı et al [-@kavakli2020] provide a useful typology for understanding the type of actions each player can undertake. They argue that a state's reactions to trade disruptions can involve external and internal substitution. External substitution involves finding alternate trade partners for a product. Internal substitution involves locating new domestic supplies of the disrupted product. The less substitutions available to a state, the more vulnerable they will be to trade disruptions.
+
+However, Gartzke and Westerwinter [-@gartzke2016] and Chen [-@chen2021] point out that we need to understand these asymmetries within the broader context of global trade. Within the network of product-level global trade, individual states will have symmetric and asymmetric relations with a number of different states.
+
+## Trade dependence and militarized conflict
+
+First, we need to understand how important trade between states $i$ and $j$ is to state $i$'s economy.
+
+> H1: The greater the proportion of state \$i\$'s GDP derived from trade in product $p$ with state \$j\$, the less likely state $i$ is to initiate militarized conflict against state $j$.
+
+Next, we need to understand whether state $i$ can locate alternative trade partners to state $j$ to mitigate the expected cost of trade disruptions from conflict.
+
+> H2: The smaller the number of trade partners in the market for product $p$, the less likely state $i$ is to initiate militarized conflict against state $j$.
+
+Next, we need to understand state $i$'s capacity for internal substitution. We will assume that state $i$ can divert exports in product $p$ to the domestic market to help mitigate costs from import disruptions imposed by state \$j\$. However, if state $i$ does not have a supply of product $p$ that it can divert from exports to fill the new gap in the domestic market, the greater the cost of trade disruptions in that product.
+
+> H3: The smaller state $i$'s ratio of exports to imports in product $p$, the less likely state $i$ is to initiate militarized conflict against state $j$.
+
+## Research design
+
+### Scope
+
+This analysis focuses on all directed state dyads in all years between 2000 and 2014. This includes `r nrow(scope) |> comma()` observations.
+
+### Dependent variable
+
+My dependent variable focuses on the onset of Militarized Interstate Disputes, or events in which one or more states threatens, displays, or uses force against another state or states. I include two binary dependent variables. First, I identify all dyad-years in which any MID was initiated. Second, I identify all dyad-years in which any MID involving at least one battle-related death was initiated. These variables are coded 1 if state $i$ initiated the MID against state $j$ in a given year. Otherwise, they receive a value of 0.
+
+The data come from version five of Palmer et al's [-@palmer2022] Militarized Interstate Dispute data collection. This dataset includes all known MIDs from 1816-2014, recorded at the participant level. Between 2000 and 2014, `r mid_df |> filter(mid_initiated == 1) |> nrow() |> comma()` MIDs were initiated.
+
+### Independent variables of interest
+
+My primary independent variable of interest is trade dependence. This paper introduces a novel measure of trade dependence. Rather than looking at the balance of trade in total imports, exports, or trade value, I measure dependence in trade of specific products. This more fine-grained approach to measuring trade dependence allows us to examine more precisely the potential cost a foreign government could incur if their trade partner discovered their efforts at subversion.
+
+This measure of trade dependence treats both the imposer and target of trade disrupts as complex actors. With regard to the imposer, it accounts for their attempts to disrupt trade in a product in which the trade asymmetries will result in the lowest cost to their economy.
+
+With regard to the target, it captures the various responses available to them. It includes an understanding of how easily the target can locate an alternative trade partner for the disrupted product. If the target is able to easily and quickly locate an alternate trade partner, the threat or imposition of trade embargoes will have little deterrent effects.
+
+This measure of trade dependence captures three components of a state's imports or exports: first, the importance of trade in the product to the state's economy; second, the diversity of the trade partner pool for each product; and third, each trade partner's dominance in the market for each product. I will expand on each of these components in turn.
+
+First, how important is trade in each product to the state's economy? To build our understanding of a state's product-level reliance on trade with another state, we must first determine the degree to which their economy relies on access to or sales of that specific product. I, therefore, measure this as the value of trade in that product by the reporter as a proportion of its gross domestic product (GDP).
+
+$$
+r_{ij,p,t} = \frac{m_{ij,p,t} + x_{ij,p,t}}{GDP_{i,t}}
+$$
+
+Where $j$ is the trade partner and $p$ is the product. This value is measured for each year, $t$.
+
+Second, we need to understand whether alternate trade partners are available for the state to turn to if trade in a product is disrupted. This is simply a measure of the number of other states trading in that product. I take the natural logarithum of this value to account for diminishing returns from many additional alternate trade partners.
+
+Second, how diverse is the trade partner pool for each product? If the state only imports (or exports) a product from (to) one trade partner, they are more exposed than a state that trades in the product with many different trade partners. To measure this, I consider the value of trade with a partner as a proportion of the value of trade in the product.
+
+For imports:
+
+$$
+d_{ij,p,t} = \frac{m_{ij,p,t}}{m_{ik,p,t}}
+$$
+
+For exports:
+
+$$
+d_{ij,p,t} = \frac{x_{ij,p,t}}{x_{ik,p,t}}
+$$
+
+Where $k$ represents all of state $i$'s trade partners.
+
+Finally, how dominant is each trade partner in the market for each product? If the state trades in a product that is imported (or exported) by one trade partner, they are more vulnerable to trade disruptions from that one trade partner than if alternative trade partners exist.[^1] To measure this, I consider the value of products traded by the trade partner as a proportion of total value of that product traded.
+
+[^1]: This, of course, assumes that the state can easily access these alternative markets. I leave it up to further research to capture the nuanced difficulties inherent in this process.
+
+For imports:
+
+$$
+a_{j,p,t} = \frac{x_{jk,p,t}}{x_{p,t}}
+$$
+
+For exports:
+
+$$
+a_{j,p,t} = \frac{m_{jk,p,t}}{m_{p,t}}
+$$
+
+I then aggregate these measures to determine the level of trade dependence of state $i$ on their trade partner $j$ by product in a given year:
+
+$$
+dep_{ij,p,t} = \sum{r_{ij,p,t}, d_{ij,p,t}, a_{j,p,t}}
+$$
+
+This measure allows me to focus on trade in goods and services that are critical to the potential supporter. I argue that this represents the true cost that the potential sponsor considers when deciding whether or not to support a NSA group challenging a rival state.
+
+### Previous measures of trade dependence
+
+Chen [-@chen2021] develops a measure of Extended Dependence, or "the extent to which the potential challenger is economically dependent on the defensive allies of its potential target" (p.251). He defines this as:
+
+$$
+TD_{ij,t} = \frac{M_{ik,t} + X_{ik,t}}{GDP_{i,t}}
+$$
+
+Where $i$ is the potential challenger, $j$ is the target, $k$ is the target's allies, and $t$ is the given year. He lags this value by one year to address concerns surrounding endogeneity and reverse causality.
+
+### Control variables
