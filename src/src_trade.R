@@ -25,12 +25,6 @@ reporter_ids <- fromJSON("https://comtrade.un.org/Data/cache/reporterAreas.json"
                       "Fmr Ethiopia")) |> 
   pull(id)
 
-pull_scope <- tibble(
-  year = 2008:2013
-) |> 
-  full_join(tibble(reporter_id = reporter_ids), by = character()) |> 
-  arrange(desc(year))
-
 pull_comtrade <- function(reporter_id, year) {
   
   query <- glue::glue("https://comtrade.un.org/api/get?r={ reporter_id }&ps={ year }&fmt=json&freq=A&head=M&px=HS&cc=AG2")
@@ -52,7 +46,8 @@ pull_comtrade <- function(reporter_id, year) {
   if (result$validation$status$name != "Result too large" & length(result$dataset) > 0) {
     
     return(
-      tibble(result$dataset)
+      tibble(result$dataset) |> 
+        mutate(across(everything(), ~ as.character(.x)))
     )
     
   } else if (result$validation$status$name != "Result too large" & length(result$dataset) == 0) {
@@ -68,7 +63,7 @@ pull_comtrade <- function(reporter_id, year) {
     
     return(
       tibble(
-        rtCode = as.integer(reporter_id),
+        rtCode = reporter_id,
         status = "Result too large"
       )
     )
@@ -77,7 +72,7 @@ pull_comtrade <- function(reporter_id, year) {
   
 }
 
-trade_df <- map2_dfr(pull_scope$reporter_id, pull_scope$year, ~ pull_comtrade(.x, .y))
+safely_pull_comtrade <- safely(~ pull_comtrade(.x, .y))
 
-
-
+trade_df <- map2_dfr(reporter_ids, 2013, ~ pull_comtrade(.x, .y))
+ 

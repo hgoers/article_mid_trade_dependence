@@ -14,59 +14,6 @@ perc_df <- rio::import(here::here("data", "full_df.csv")) |>
                       v2x_polyarchy1 = "Democracy, state i",
                       v2x_polyarchy2 = "Democracy, state j")
 
-# Product-level trade dependence measures ---------------------------------
-
-m_max <- glm(
-  mid_onset_all ~ trade_dep_max, 
-  family = binomial(link = "logit"), 
-  data = perc_df
-)
-
-m_75 <- glm(
-  mid_onset_all ~ trade_dep_75, 
-  family = binomial(link = "logit"), 
-  data = perc_df
-)
-
-m_avg <- glm(
-  mid_onset_all ~ trade_dep_avg, 
-  family = binomial(link = "logit"), 
-  data = perc_df
-)
-
-m_25 <- glm(
-  mid_onset_all ~ trade_dep_25, 
-  family = binomial(link = "logit"), 
-  data = perc_df
-)
-
-tidy(m_max, exponentiate = T) |> 
-  select(term, estimate, std.error) |> 
-  bind_rows(
-    tidy(m_75, exponentiate = T) |> 
-      select(term, estimate, std.error)
-  ) |> 
-  bind_rows(
-    tidy(m_avg, exponentiate = T) |> 
-      select(term, estimate, std.error)
-  ) |> 
-  bind_rows(
-    tidy(m_25, exponentiate = T) |> 
-      select(term, estimate, std.error)
-  ) |> 
-  filter(term != "(Intercept)") |> 
-  mutate(
-    conf.low = estimate - (std.error * 1.96),
-    conf.high = estimate + (std.error * 1.96),
-    term = factor(term, ordered = T)
-  ) |> 
-  select(-std.error) |> 
-  pivot_longer(estimate:conf.high) |> 
-  ggplot(aes(x = value, y = reorder(term, term))) +
-  geom_line() + 
-  geom_point() + 
-  geom_vline(xintercept = 0, colour = "darkgrey")
-
 # Basic models ------------------------------------------------------------
 
 m1 <- glm(
