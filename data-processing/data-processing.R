@@ -6,8 +6,11 @@ library(jsonlite)
 
 # Scope -------------------------------------------------------------------
 
+min_year <- 2014
+max_year <- 2014
+
 scope <- create_dyadyears(system = "cow", mry = F, directed = T) |> 
-  filter(year == 2014, !ccode1 %in% c(347, 713)) |> 
+  filter(year %in% min_year:max_year, !ccode1 %in% c(347, 713)) |> 
   mutate(
     country1 = countrycode(ccode1, "cown", "country.name"),
     country2 = countrycode(ccode2, "cown", "country.name")
@@ -47,7 +50,7 @@ trade_raw <- rio::import(here::here("data-raw", "trade_data_2014.csv")) |>
 trade_bilat <- trade_raw |> 
   filter(country2 != "World")
 
-gdp_df <- wbstats::wb_data("NY.GDP.MKTP.CD", start_date = 2014, end_date = 2014, return_wide = F) |> 
+gdp_df <- wbstats::wb_data("NY.GDP.MKTP.CD", start_date = min_year, end_date = max_year, return_wide = F) |> 
   transmute(
     country1 = countrycode(iso3c, "iso3c", "country.name"), 
     year = date, 
@@ -74,14 +77,7 @@ trade_dep_max <- trade_dep |>
   group_by(country1, country2, year) |> 
   slice_max(trade_dep_total, with_ties = F) |> 
   ungroup() |> 
-  select(year:cmd_code, cmd_desc_e, trade_dep_max = trade_dep_total)
-
-trade_dep_75 <- trade_dep |> 
-  group_by(country1, country2, year) |> 
-  mutate(trade_dep_75 = quantile(trade_dep_total)[[4]]) |> 
-  view()
-  ungroup() |> 
-  select(year:cmd_code, cmd_desc_e, trade_dep_max = trade_dep_total)
+  select(year:cmd_code, cmd_desc_e, trade_dep_total)
 
 trade_dep_broad <- trade_bilat |> 
   group_by(year, country1, country2) |> 

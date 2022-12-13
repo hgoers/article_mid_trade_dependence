@@ -2,12 +2,14 @@ library(tidyverse)
 library(broom)
 library(gtsummary)
 library(labelled)
+library(mvtnorm)
 
 # Load in full dataset ----------------------------------------------------
 
-perc_df <- rio::import(here::here("data", "full_df.csv")) |> 
-  mutate(across(trade_dep_max:trade_dep_broad, ~ .x * 100),
-         trade_dep_total = trade_dep_max) |> 
+full_df <- rio::import(here::here("data", "full_df.csv"))
+
+perc_df <- full_df |> 
+  mutate(across(trade_dep_total:trade_dep_broad, ~ .x * 100)) |> 
   set_variable_labels(trade_dep_total = "Trade dependence, product-level",
                       trade_dep_broad = "Trade dependence, total trade", 
                       conttype = "Contiguous",
@@ -48,7 +50,7 @@ pred_m1_m2 <- augment(
 # Controlled models -------------------------------------------------------
 
 m3 <- glm(
-  mid_onset_all ~ trade_dep_total + conttype + v2x_polyarchy1 + v2x_polyarchy2 , 
+  mid_onset_all ~ trade_dep_total + conttype + v2x_polyarchy1 + v2x_polyarchy2, 
   family = binomial(link = "logit"), 
   data = perc_df
 )
