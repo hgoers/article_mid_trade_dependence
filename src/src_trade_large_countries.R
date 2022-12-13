@@ -3,23 +3,27 @@ library(countrycode)
 library(httr)
 library(jsonlite)
 
+# Set file path
+year <- 2013
+
 # Read in existing trade data
-annual_trade_df <- rio::import(here::here("data-raw", "trade_data_2014.csv"))
+trade_df <- rio::import(here::here("data-raw", glue::glue("trade_data_{ year }.csv")))
 
 # Attempt direction-based pull --------------------------------------------
 
 # Find countries for which yearly trade data is too big
 pull_scope <- tibble(direction = c(1, 2)) |> 
   full_join(
-    rio::import(here::here("data-raw", "trade_data_2014.csv")) |> 
+    trade_df |> 
       filter(status == "Result too large") |> 
       select(rtCode),
     by = character()
-  )
+  ) |> 
+  mutate(across(everything(), ~ as.character(.x)))
 
 pull_large_comtrade <- function(reporter_id, direction) {
   
-  query <- glue::glue("https://comtrade.un.org/api/get?r={ reporter_id }&ps=2014&rg={ direction }&fmt=json&freq=A&head=M&px=HS&cc=AG2")
+  query <- glue::glue("https://comtrade.un.org/api/get?r={ reporter_id }&ps={ year }&rg={ direction }&fmt=json&freq=A&head=M&px=HS&cc=AG2")
   
   result <- tryCatch(
     fromJSON(query),
@@ -38,7 +42,8 @@ pull_large_comtrade <- function(reporter_id, direction) {
   if (result$validation$status$name != "Result too large" & length(result$dataset) > 0) {
     
     return(
-      tibble(result$dataset)
+      tibble(result$dataset) |> 
+        mutate(across(everything(), ~ as.character(.x)))
     )
     
   } else if (result$validation$status$name != "Result too large" & length(result$dataset) == 0) {
@@ -54,8 +59,8 @@ pull_large_comtrade <- function(reporter_id, direction) {
     
     return(
       tibble(
-        rtCode = as.integer(reporter_id),
-        rgCode = as.integer(direction),
+        rtCode = reporter_id,
+        rgCode = direction,
         status = glue::glue("Results too large: { direction }")
       )
     )
@@ -73,33 +78,37 @@ large_trade_df <- map2_dfr(
 )
 
 # Update results
-large_annual_trade_df <- annual_trade_df |> 
-  as_tibble() |> 
+large_annual_trade_df <- trade_df |> 
   filter(status != "Result too large") |> 
+  mutate(across(everything(), ~ as.character(.x))) |> 
   bind_rows(
-    large_trade_df$result |> 
-      mutate(periodDesc = as.integer(periodDesc),
-             cmdCode = as.integer(cmdCode))
+    large_trade_df$result
   )
 
 # Attempt grouped commodity pull ------------------------------------------
 
-pull_scope <- tibble(rtCode = c(124, 251)) |> 
+pull_scope <- large_annual_trade_df |> 
+  filter(str_detect(status, "Results too large")) |> 
+  select(rgCode, rtCode) |> 
   left_join(
-    trade_df$result |> 
+    trade_df |> 
       distinct(cmdCode),
     by = character()
   ) |> 
   drop_na() |> 
   mutate(group = if_else(row_number() %% 3 == 0, row_number(), NA_integer_)) |> 
   fill(group, .direction = c("downup")) |> 
-  group_by(rtCode, group) |> 
+  group_by(rgCode, rtCode, group) |> 
   summarise(cmdCode = paste(cmdCode, collapse = ",")) |> 
   ungroup()
   
-pull_very_large_comtrade <- function(reporter_id, cmd_code) {
+pull_very_large_comtrade <- function(df) {
   
-  query <- glue::glue("https://comtrade.un.org/api/get?r={ reporter_id }&ps=2014&cc={ cmd_code }&fmt=json&freq=A&head=M&px=HS&cc=AG2")
+  reporter_id <- df$rtCode
+  cmd_code <- df$cmdCode
+  direction <- df$rgCode
+  
+  query <- glue::glue("https://comtrade.un.org/api/get?r={ reporter_id }&ps={ year }&rg={ direction }&cc={ cmd_code }&fmt=json&freq=A&head=M&px=HS&cc=AG2")
   
   result <- tryCatch(
     fromJSON(query),
@@ -118,7 +127,8 @@ pull_very_large_comtrade <- function(reporter_id, cmd_code) {
   if (result$validation$status$name != "Result too large" & length(result$dataset) > 0) {
     
     return(
-      tibble(result$dataset)
+      tibble(result$dataset) |> 
+        mutate(across(everything(), ~ as.character(.x)))
     )
     
   } else if (result$validation$status$name != "Result too large" & length(result$dataset) == 0) {
@@ -126,7 +136,7 @@ pull_very_large_comtrade <- function(reporter_id, cmd_code) {
     return(
       tibble(
         rtCode = reporter_id,
-        status = glue::glue("No results found: {cmd_code}")
+        status = glue::glue("No results found: {cmd_code} and {direction}")
       )
     )
     
@@ -134,8 +144,8 @@ pull_very_large_comtrade <- function(reporter_id, cmd_code) {
     
     return(
       tibble(
-        rtCode = as.integer(reporter_id),
-        status = glue::glue("Result too large: {cmd_code}")
+        rtCode = reporter_id,
+        status = glue::glue("Result too large: {cmd_code} and {direction}")
       )
     )
     
@@ -143,17 +153,15 @@ pull_very_large_comtrade <- function(reporter_id, cmd_code) {
   
 }
 
-safely_pull_very_large_comtrade <- safely(~ pull_very_large_comtrade(.x, .y))
+safely_pull_very_large_comtrade <- safely(~ pull_very_large_comtrade(.x))
 
-very_large_trade_df <- map2_dfr(pull_scope$rtCode, pull_scope$cmdCode, ~ safely_pull_very_large_comtrade(.x, .y))
+very_large_trade_df <- map_dfr(1:nrow(pull_scope), ~ safely_pull_very_large_comtrade(slice(pull_scope, .x)))
 
 very_large_annual_trade_df <- large_annual_trade_df |> 
   filter(status != "Result too large") |> 
   bind_rows(
-    very_large_trade_df$result |> 
-      mutate(periodDesc = as.integer(periodDesc),
-             cmdCode = as.integer(cmdCode))
+    very_large_trade_df$result
   )
 
-rio::export(very_large_annual_trade_df, here::here("data-raw", "trade_data_2014.csv"))
+rio::export(very_large_annual_trade_df, here::here("data-raw", "complete_trade_data_2013.csv"))
 

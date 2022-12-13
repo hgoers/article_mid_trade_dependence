@@ -75,4 +75,6 @@ pull_comtrade <- function(reporter_id, year) {
 safely_pull_comtrade <- safely(~ pull_comtrade(.x, .y))
 
 trade_df <- map2_dfr(reporter_ids, 2013, ~ pull_comtrade(.x, .y))
+
+rio::export(trade_df, here::here("data-raw", "trade_data_2013.csv"))
  
